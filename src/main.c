@@ -2,7 +2,7 @@
 
 int main()
 {
-    Image *image;
+    Image *image = NULL;
 
     while (1)
     {
@@ -21,6 +21,10 @@ int main()
 
                 break;
             }
+            case 8:
+                printImage(image);
+
+                break;
         } 
     } 
 

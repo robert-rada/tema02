@@ -24,5 +24,6 @@ Image *deleteImage(Image *image);
 Pixel setPixel(unsigned char red, unsigned char green, unsigned char blue);
 void readImage(Image *image);
 void printImage(Image *image);
+void printPixel(Pixel pixel);
 
 #endif

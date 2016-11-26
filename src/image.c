@@ -9,9 +9,17 @@ Image *newImage(int width, int height)
         exit(EXIT_FAILURE);
     }
 
-    Image *new_image = malloc(width * height * sizeof(Pixel));
+    Image *new_image = malloc(sizeof(Image));
     if (new_image == NULL)
     {
+        fprintf(stderr, "%d\n", ENOMEM);
+        exit(EXIT_FAILURE);
+    }
+
+    new_image->pixels = malloc(width * height * sizeof(Pixel));
+    if (new_image->pixels == NULL)
+    {
+        free(new_image);
         fprintf(stderr, "%d\n", ENOMEM);
         exit(EXIT_FAILURE);
     }
@@ -64,12 +72,23 @@ void readImage(Image *image)
     }
 }
 
+void printPixel(Pixel pixel)
+{
+    printf("%d %d %d ", pixel.red, pixel.blue, pixel.green);
+}
+
 void printImage(Image *image)
 {
     if (image == NULL)
     {
-
+        fprintf(stderr, "%d\n", EPERM);
+        exit(EXIT_FAILURE);
     }
     
-    for (int i = 0; i < width; i++)
+    for (int i = 0; i < image->height; i++)
+    {
+        for (int j = 0; j < image->width; j++)
+            printPixel(image->pixels[i * image->width + j]);
+        printf("\n");
+    }
 }
