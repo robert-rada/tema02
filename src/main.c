@@ -30,8 +30,8 @@ int main()
                 int start_line, end_line;
                 int start_col, end_col;
 
-                scanf("%d%d", &start_line, &start_col);
-                scanf("%d%d", &end_line, &end_col);
+                scanf("%d%d", &start_col, &start_line);
+                scanf("%d%d", &end_col, &end_line);
                 
                 image = cropImage(image, start_line, start_col,
                         end_line, end_col);

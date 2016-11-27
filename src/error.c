@@ -3,6 +3,7 @@
 void errorPerm(Image *image)
 {
     deleteImage(image);
+    fflush(stdout);
     fprintf(stderr, "%d\n", EPERM);
     exit(EXIT_FAILURE);
 }
@@ -10,6 +11,7 @@ void errorPerm(Image *image)
 void errorInvalid(Image *image)
 {
     deleteImage(image);
+    fflush(stdout);
     fprintf(stderr, "%d\n", EINVAL);
     exit(EXIT_FAILURE);
 }
@@ -17,6 +19,7 @@ void errorInvalid(Image *image)
 void errorMemory(Image *image)
 {
     deleteImage(image);
+    fflush(stdout);
     fprintf(stderr, "%d\n", ENOMEM);
     exit(EXIT_FAILURE);
 }

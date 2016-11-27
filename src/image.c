@@ -21,7 +21,7 @@ Image *newImage(int width, int height)
     if (new_image->pixels == NULL)
     {
         free(new_image);
-        fprintf(stderr, "%d\n", ENOMEM);
+        fprintf(stderr, "erro in newImage%d\n", ENOMEM);
         exit(EXIT_FAILURE);
     }
 
@@ -40,6 +40,11 @@ Image *deleteImage(Image *image)
     return NULL;
 }
 
+Pixel *getPixel(Image *image, int line, int col)
+{
+    return image->pixels + line * image->width + col;
+}
+
 Image *cropImage(Image *image, int start_line, int start_col,
         int end_line, int end_col)
 {
@@ -51,18 +56,28 @@ Image *cropImage(Image *image, int start_line, int start_col,
     if (start_line < 0 || start_line >= image->height ||
         start_col < 0 || start_col >= image->width ||
         end_line < 0 || end_line >= image->height ||
-        end_col < 0 || end_col >= image->width)
+        end_col < 0 || end_col >= image->width ||
+        start_line > end_line ||
+        start_col > end_col)
     {
         image = deleteImage(image);
         fprintf(stderr, "%d\n", EINVAL);
         exit(EXIT_FAILURE);
     }
 
-    Image *new_image = malloc(sizeof(image));
-    if (new_image == NULL)
+    Image *new_image = newImage(end_col - start_col + 1,
+                                end_line - start_line + 1);
+
+    for (int line = start_line; line <= end_line; line++)
     {
-        image = deleteImage(image);
+        memcpy(getPixel(new_image, line - start_line, 0),
+               getPixel(image, line, start_col),
+               sizeof(Pixel) * (end_col - start_col + 1));
     }
+
+    deleteImage(image);
+
+    return new_image;
 }
 
 Pixel setPixel(unsigned char red, unsigned char green, unsigned char blue)
@@ -108,7 +123,7 @@ void printImage(Image *image)
         fprintf(stderr, "%d\n", EPERM);
         exit(EXIT_FAILURE);
     }
-    
+
     for (int i = 0; i < image->height; i++)
     {
         for (int j = 0; j < image->width; j++)
