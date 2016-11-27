@@ -9,7 +9,8 @@ Image *newImage(int width, int height)
         exit(EXIT_FAILURE);
     }
 
-    Image *new_image = malloc(sizeof(Image));
+    Image tmp;
+    Image *new_image = malloc(sizeof(tmp));
     if (new_image == NULL)
     {
         fprintf(stderr, "%d\n", ENOMEM);
@@ -34,11 +35,34 @@ Image *deleteImage(Image *image)
 {
     if (image == NULL)
         return NULL;
-
     free(image->pixels);
     free(image);
-
     return NULL;
+}
+
+Image *cropImage(Image *image, int start_line, int start_col,
+        int end_line, int end_col)
+{
+    if (image == NULL)
+    {
+        fprintf(stderr, "%d\n", EPERM);
+        exit(EXIT_FAILURE);
+    }
+    if (start_line < 0 || start_line >= image->height ||
+        start_col < 0 || start_col >= image->width ||
+        end_line < 0 || end_line >= image->height ||
+        end_col < 0 || end_col >= image->width)
+    {
+        image = deleteImage(image);
+        fprintf(stderr, "%d\n", EINVAL);
+        exit(EXIT_FAILURE);
+    }
+
+    Image *new_image = malloc(sizeof(image));
+    if (new_image == NULL)
+    {
+        image = deleteImage(image);
+    }
 }
 
 Pixel setPixel(unsigned char red, unsigned char green, unsigned char blue)

@@ -1,0 +1,5 @@
+main.c --> image.h --> error.h --> struct.h --> const.h --> headers.h
+            ^   ^                                  ^
+            |   |                                  |
+   image.c--+   +--error.c                      const.c
+             
