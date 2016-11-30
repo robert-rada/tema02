@@ -14,7 +14,7 @@ typedef struct
 {
     int width;
     int height;
-    Pixel *pixels;
+    Pixel **pixels;
 } Image;
 
 #endif

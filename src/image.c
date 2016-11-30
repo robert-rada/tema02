@@ -17,12 +17,15 @@ Image *newImage(int width, int height)
         exit(EXIT_FAILURE);
     }
 
-    new_image->pixels = malloc(width * height * sizeof(Pixel));
+    new_image->pixels = malloc(height * sizeof(Pixel*));
     if (new_image->pixels == NULL)
+        errorMemory(new_image);
+
+    for (int i = 0; i < height; i++)
     {
-        free(new_image);
-        fprintf(stderr, "erro in newImage%d\n", ENOMEM);
-        exit(EXIT_FAILURE);
+        new_image->pixels[i] = malloc(width * sizeof(Pixel));
+        if (new_image->pixels[i] == NULL)
+            errorMemory(new_image);
     }
 
     new_image->width = width;
@@ -35,15 +38,21 @@ Image *deleteImage(Image *image)
 {
     if (image == NULL)
         return NULL;
+
+    for (int i = 0; i < image->height; i++)
+        free(image->pixels[i]);
     free(image->pixels);
     free(image);
+
     return NULL;
 }
 
+/*
 Pixel *getPixel(Image *image, int line, int col)
 {
     return image->pixels + line * image->width + col;
 }
+*/
 
 Image *cropImage(Image *image, int start_line, int start_col,
         int end_line, int end_col)
@@ -70,14 +79,22 @@ Image *cropImage(Image *image, int start_line, int start_col,
 
     for (int line = start_line; line <= end_line; line++)
     {
-        memcpy(getPixel(new_image, line - start_line, 0),
-               getPixel(image, line, start_col),
+        memcpy(&new_image->pixels[line-start_line][0],
+               &image->pixels[line][start_col],
                sizeof(Pixel) * (end_col - start_col + 1));
     }
 
     deleteImage(image);
 
     return new_image;
+}
+
+Image *resizeImage(Image *image, int width, int height)
+{
+    if (width < MIN_WIDTH || width > MAX_WIDTH ||
+            height < MIN_HEIGHT || height > MAX_HEIGHT)
+        errorPerm(image);
+
 }
 
 Pixel setPixel(unsigned char red, unsigned char green, unsigned char blue)
@@ -93,22 +110,22 @@ Pixel setPixel(unsigned char red, unsigned char green, unsigned char blue)
 
 void readImage(Image *image)
 {
-    int nr_pixels = image->width * image->height;
-    for (int i = 0; i < nr_pixels; i++)
-    {
-        int r, g, b;
-        scanf("%d%d%d", &r, &g, &b);
-        if (r < MIN_PIXEL_VALUE || r > MAX_PIXEL_VALUE ||
-            g < MIN_PIXEL_VALUE || g > MAX_PIXEL_VALUE ||
-            b < MIN_PIXEL_VALUE || b > MAX_PIXEL_VALUE)
+    for (int i = 0; i < image->height; i++)
+        for (int j = 0; j < image->width; j++)
         {
-            fprintf(stderr, "%d\n", EINVAL);
-            image = deleteImage(image);
-            exit(EXIT_FAILURE);
-        }
+            int r, g, b;
+            scanf("%d%d%d", &r, &g, &b);
+            if (r < MIN_PIXEL_VALUE || r > MAX_PIXEL_VALUE ||
+                g < MIN_PIXEL_VALUE || g > MAX_PIXEL_VALUE ||
+                b < MIN_PIXEL_VALUE || b > MAX_PIXEL_VALUE)
+            {
+                 fprintf(stderr, "%d\n", EINVAL);
+                image = deleteImage(image);
+                exit(EXIT_FAILURE);
+            }
 
-        image->pixels[i] = setPixel(r, g, b);
-    }
+            image->pixels[i][j] = setPixel(r, g, b);
+        }
 }
 
 void printPixel(Pixel pixel)
@@ -127,7 +144,7 @@ void printImage(Image *image)
     for (int i = 0; i < image->height; i++)
     {
         for (int j = 0; j < image->width; j++)
-            printPixel(image->pixels[i * image->width + j]);
+            printPixel(image->pixels[i][j]);
         printf("\n");
     }
 }
