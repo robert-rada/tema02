@@ -89,12 +89,36 @@ Image *cropImage(Image *image, int start_line, int start_col,
     return new_image;
 }
 
-Image *resizeImage(Image *image, int width, int height)
+void resizeImage(Image *image, int width, int height)
 {
     if (width < MIN_WIDTH || width > MAX_WIDTH ||
             height < MIN_HEIGHT || height > MAX_HEIGHT)
         errorPerm(image);
 
+    for (int i = height; i < image->height; i++)
+        free(image->pixels[i]);
+    image->pixels = realloc(image->pixels, height * sizeof(Pixel*));
+    if (image->pixels == NULL)
+        errorMemory(image);
+
+    for (int i = 0; i < height; i++)
+    {
+        image->pixels[i] = realloc(image->pixels[i], width * sizeof(Pixel));
+        if (image->pixels[i] == NULL)
+            errorMemory(image);
+    }
+
+    for (int i = image->height; i < height; i++)
+        memset(image->pixels[i], 255, width * sizeof(Pixel));
+    if (width > image->width)
+        for (int i = 0; i < image->height; i++)
+        {
+            memset(&image->pixels[i][image->width], 255, 
+                    (width - image->width) * sizeof(Pixel));
+        }
+
+    image->width = width;
+    image->height = height;
 }
 
 Pixel setPixel(unsigned char red, unsigned char green, unsigned char blue)
@@ -130,7 +154,7 @@ void readImage(Image *image)
 
 void printPixel(Pixel pixel)
 {
-    printf("%d %d %d ", pixel.red, pixel.blue, pixel.green);
+    printf("%d %d %d ", pixel.red, pixel.green, pixel.blue);
 }
 
 void printImage(Image *image)
@@ -140,6 +164,8 @@ void printImage(Image *image)
         fprintf(stderr, "%d\n", EPERM);
         exit(EXIT_FAILURE);
     }
+
+    printf("%d %d\n", image->width, image->height);
 
     for (int i = 0; i < image->height; i++)
     {

@@ -38,6 +38,15 @@ int main()
 
                 break;
             }
+            case 3:
+            {
+                int width, height;
+                scanf("%d%d", &width, &height);
+
+                resizeImage(image, width, height);
+
+                break;
+            }
             case 8:
                 printImage(image);
 
