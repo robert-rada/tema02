@@ -152,6 +152,23 @@ void readImage(Image *image)
         }
 }
 
+void colorRegion(Image *image, int start_col, int start_line,
+        int end_col, int end_line, int r, int g, int b)
+{
+    if (r < MIN_PIXEL_VALUE || r > MAX_PIXEL_VALUE ||
+        g < MIN_PIXEL_VALUE || g > MAX_PIXEL_VALUE ||
+        b < MIN_PIXEL_VALUE || b > MAX_PIXEL_VALUE ||
+        image->width < MIN_WIDTH || image->width > MAX_WIDTH ||
+        image->height < MIN_HEIGHT || image->height > MAX_HEIGHT)
+    {
+        errorPerm(image);
+    }
+
+    for (int line = start_line; line <= end_line; line++)
+        for (int col = start_col; col <= end_col; col++)
+            image->pixels[line][col] = setPixel(r, g, b);
+}
+
 void printPixel(Pixel pixel)
 {
     printf("%d %d %d ", pixel.red, pixel.green, pixel.blue);

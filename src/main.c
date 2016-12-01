@@ -47,6 +47,21 @@ int main()
 
                 break;
             }
+            case 4:
+            {
+                int start_line, end_line;
+                int start_col, end_col;
+                int r, g, b;
+
+                scanf("%d%d", &start_col, &start_line);
+                scanf("%d%d", &end_col, &end_line);
+                scanf("%d%d%d", &r, &g, &b);
+
+                colorRegion(image, start_col, start_line, end_col, end_line,
+                        r, g, b);
+
+                break;
+            }
             case 8:
                 printImage(image);
 
