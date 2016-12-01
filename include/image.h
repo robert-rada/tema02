@@ -10,12 +10,15 @@ Image *cropImage(Image *image, int start_line, int start_col,
 Pixel *getPixel(Image *image, int line, int col);
 Pixel setPixel(unsigned char red, unsigned char green,
         unsigned char blue);
+Pixel pixelAverage(Image *image, int line, int col);
 void readImage(Image *image);
 void resizeImage(Image *image, int width, int height);
 void colorRegion(Image *image, int start_col, int start_line,
         int end_col, int end_line, int r, int g, int b);
+void blurImage(Image *image, int nr);
 void printImage(Image *image);
 void printPixel(Pixel pixel);
+void swapPointers(Pixel **a, Pixel **b);
 
 
 #endif

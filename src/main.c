@@ -62,6 +62,15 @@ int main()
 
                 break;
             }
+            case 5:
+            {
+                int nr;
+                scanf("%d", &nr);
+
+                blurImage(image, nr);
+
+                break;
+            }
             case 8:
                 printImage(image);
 

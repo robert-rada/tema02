@@ -91,9 +91,12 @@ Image *cropImage(Image *image, int start_line, int start_col,
 
 void resizeImage(Image *image, int width, int height)
 {
+    if (image == NULL)
+        errorPerm();
+
     if (width < MIN_WIDTH || width > MAX_WIDTH ||
             height < MIN_HEIGHT || height > MAX_HEIGHT)
-        errorPerm(image);
+        errorInvalid(image);
 
     for (int i = height; i < image->height; i++)
         free(image->pixels[i]);
@@ -132,6 +135,87 @@ Pixel setPixel(unsigned char red, unsigned char green, unsigned char blue)
     return tmp;
 }
 
+Pixel pixelAverage(Image *image, int line, int col)
+{
+    int nr = 0;
+    int r = 0, g = 0, b = 0;
+
+    if (line != 0)
+    {
+        nr++;
+        r += image->pixels[line-1][col].red;
+        g += image->pixels[line-1][col].green;
+        b += image->pixels[line-1][col].blue;
+    }
+    if (line != image->height-1)
+    {
+        nr++;
+        r += image->pixels[line+1][col].red;
+        g += image->pixels[line+1][col].green;
+        b += image->pixels[line+1][col].blue;
+    }
+    if (col != 0)
+    {
+        nr++;
+        r += image->pixels[line][col-1].red;
+        g += image->pixels[line][col-1].green;
+        b += image->pixels[line][col-1].blue;
+    }
+    if (col != image->width-1)
+    {
+        nr++;
+        r += image->pixels[line][col+1].red;
+        g += image->pixels[line][col+1].green;
+        b += image->pixels[line][col+1].blue;
+    }
+
+    if (nr == 0)
+        return image->pixels[line][col];
+
+    return setPixel(r / nr, g / nr, b / nr);
+}
+
+void swapPointers(Pixel **a, Pixel **b)
+{
+    void *tmp = *a;
+    *a = *b;
+    *b = tmp;
+}
+
+void blurImage(Image *image, int nr)
+{
+    if (image == NULL)
+        errorPerm();
+    if (nr > 1)
+    {
+        for (int i = 1; i <= nr; i++)
+            blurImage(image, 1);
+        return;
+    }
+    
+    if (nr < 0 || nr > 2000)
+        errorInvalid(image);
+
+    Pixel *new_line1 = malloc(image->width * sizeof(Pixel));
+    Pixel *new_line2 = malloc(image->width * sizeof(Pixel));
+    if (new_line1 == NULL || new_line2 == NULL)
+        errorMemory(image);
+
+    for (int i = 0; i < image->height; i++)
+    {
+        for (int j = 0; j < image->width; j++)
+            new_line2[j] = pixelAverage(image, i, j);
+
+        if (i > 0)
+            swapPointers(&image->pixels[i-1], &new_line1);
+        swapPointers(&new_line1, &new_line2);
+    }
+    swapPointers(&image->pixels[image->height-1], &new_line1);
+
+    free(new_line1);
+    free(new_line2);
+}
+
 void readImage(Image *image)
 {
     for (int i = 0; i < image->height; i++)
@@ -155,6 +239,8 @@ void readImage(Image *image)
 void colorRegion(Image *image, int start_col, int start_line,
         int end_col, int end_line, int r, int g, int b)
 {
+    if (image == NULL)
+        errorPerm();
     if (r < MIN_PIXEL_VALUE || r > MAX_PIXEL_VALUE ||
         g < MIN_PIXEL_VALUE || g > MAX_PIXEL_VALUE ||
         b < MIN_PIXEL_VALUE || b > MAX_PIXEL_VALUE ||
