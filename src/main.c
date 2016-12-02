@@ -13,6 +13,7 @@ int main()
         switch (query_type)
         {
             case 0:
+                image = deleteImage(image);
                 running = 0;
                 break;
             case 1:
@@ -20,6 +21,7 @@ int main()
                 int width, height;
                 scanf("%d%d", &width, &height);
 
+                image = deleteImage(image);
                 image = newImage(width, height);
                 readImage(image);
 
@@ -105,6 +107,8 @@ int main()
                 printImage(image);
 
                 break;
+            default:
+                errorPerm(image);
         } 
     } 
 

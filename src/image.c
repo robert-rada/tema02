@@ -5,17 +5,12 @@ Image *newImage(int width, int height)
     if (width < MIN_WIDTH || width > MAX_WIDTH ||
         height < MIN_HEIGHT || height > MAX_HEIGHT)
     {
-        fprintf(stderr, "%d\n", EINVAL);
-        exit(EXIT_FAILURE);
+        errorInvalid(NULL);
     }
 
-    Image tmp;
-    Image *new_image = malloc(sizeof(tmp));
+    Image *new_image = malloc(sizeof(Image));
     if (new_image == NULL)
-    {
-        fprintf(stderr, "%d\n", ENOMEM);
-        exit(EXIT_FAILURE);
-    }
+        errorMemory(NULL);
 
     new_image->pixels = malloc(height * sizeof(Pixel*));
     if (new_image->pixels == NULL)
@@ -51,10 +46,8 @@ Image *cropImage(Image *image, int start_line, int start_col,
         int end_line, int end_col)
 {
     if (image == NULL)
-    {
-        fprintf(stderr, "%d\n", EPERM);
-        exit(EXIT_FAILURE);
-    }
+        errorPerm(NULL);
+
     if (start_line < 0 || start_line >= image->height ||
         start_col < 0 || start_col >= image->width ||
         end_line < 0 || end_line >= image->height ||
@@ -62,9 +55,7 @@ Image *cropImage(Image *image, int start_line, int start_col,
         start_line > end_line ||
         start_col > end_col)
     {
-        image = deleteImage(image);
-        fprintf(stderr, "%d\n", EINVAL);
-        exit(EXIT_FAILURE);
+        errorInvalid(image);
     }
 
     Image *new_image = newImage(end_col - start_col + 1,
@@ -105,7 +96,8 @@ Image *rotateImage(Image *image, int nr)
     Image *new_image = newImage(image->height, image->width);
     for (int line = 0; line < new_image->height; line++)
         for (int col = 0; col < new_image->width; col++)
-            new_image->pixels[line][col] = image->pixels[col][image->width - line - 1];
+            new_image->pixels[line][col] = 
+                image->pixels[col][image->width - line - 1];
 
     image = deleteImage(image);
 
@@ -219,12 +211,16 @@ void blurImage(Image *image, int nr)
         return;
     }
     
+    if (nr == 0)
+        return;
     if (nr < 0 || nr > 2000)
         errorInvalid(image);
 
     Pixel *new_line1 = malloc(image->width * sizeof(Pixel));
+    if (new_line1 == NULL)
+        errorMemory(image);
     Pixel *new_line2 = malloc(image->width * sizeof(Pixel));
-    if (new_line1 == NULL || new_line2 == NULL)
+    if (new_line2 == NULL)
         errorMemory(image);
 
     for (int i = 0; i < image->height; i++)
@@ -244,6 +240,9 @@ void blurImage(Image *image, int nr)
 
 void readImage(Image *image)
 {
+    if (image == NULL)
+        errorPerm(NULL);
+
     for (int i = 0; i < image->height; i++)
         for (int j = 0; j < image->width; j++)
         {
@@ -267,13 +266,15 @@ void colorRegion(Image *image, int start_col, int start_line,
 {
     if (image == NULL)
         errorPerm(NULL);
+
     if (r < MIN_PIXEL_VALUE || r > MAX_PIXEL_VALUE ||
         g < MIN_PIXEL_VALUE || g > MAX_PIXEL_VALUE ||
         b < MIN_PIXEL_VALUE || b > MAX_PIXEL_VALUE ||
+        start_line > end_line || start_col > end_col ||
         image->width < MIN_WIDTH || image->width > MAX_WIDTH ||
         image->height < MIN_HEIGHT || image->height > MAX_HEIGHT)
     {
-        errorPerm(image);
+        errorInvalid(image);
     }
 
     for (int line = start_line; line <= end_line; line++)
@@ -289,10 +290,7 @@ void printPixel(Pixel pixel)
 void printImage(Image *image)
 {
     if (image == NULL)
-    {
-        fprintf(stderr, "%d\n", EPERM);
-        exit(EXIT_FAILURE);
-    }
+        errorPerm(NULL);
 
     printf("%d %d\n", image->width, image->height);
 
