@@ -112,7 +112,7 @@ Image *rotateImage(Image *image, int nr)
     return new_image;
 }
 
-void resizeImage(Image *image, int width, int height)
+Image *resizeImage(Image *image, int width, int height)
 {
     if (image == NULL)
         errorPerm(NULL);
@@ -121,30 +121,52 @@ void resizeImage(Image *image, int width, int height)
             height < MIN_HEIGHT || height > MAX_HEIGHT)
         errorInvalid(image);
 
-    for (int i = height; i < image->height; i++)
-        free(image->pixels[i]);
-    image->pixels = realloc(image->pixels, height * sizeof(Pixel*));
-    if (image->pixels == NULL)
-        errorMemory(image);
+    Image *new_image = image;
 
-    for (int i = 0; i < height; i++)
+    for (int i = height; i < new_image->height; i++)
+        free(new_image->pixels[i]);
+    new_image->pixels = realloc(new_image->pixels, height * sizeof(Pixel*));
+    if (new_image->pixels == NULL)
+        errorMemory(new_image);
+
+    if (height < image->height)
     {
-        image->pixels[i] = realloc(image->pixels[i], width * sizeof(Pixel));
-        if (image->pixels[i] == NULL)
-            errorMemory(image);
+        for (int i = 0; i < height; i++)
+        {
+            new_image->pixels[i] = realloc(new_image->pixels[i], width * sizeof(Pixel));
+            if (new_image->pixels[i] == NULL)
+                errorMemory(new_image);
+        }
     }
-
-    for (int i = image->height; i < height; i++)
-        memset(image->pixels[i], 255, width * sizeof(Pixel));
-    if (width > image->width)
+    else
+    {
         for (int i = 0; i < image->height; i++)
         {
-            memset(&image->pixels[i][image->width], 255, 
-                    (width - image->width) * sizeof(Pixel));
+            new_image->pixels[i] = realloc(new_image->pixels[i], width * sizeof(Pixel));
+            if (new_image->pixels[i] == NULL)
+                errorMemory(new_image);
+        }
+        for (int i = image->height; i < height; i++)
+        {
+            new_image->pixels[i] = malloc(width * sizeof(Pixel));
+            if (new_image->pixels[i] == NULL)
+                errorMemory(new_image);
+        }
+    }
+
+    for (int i = new_image->height; i < height; i++)
+        memset(new_image->pixels[i], 255, width * sizeof(Pixel));
+    if (width > new_image->width)
+        for (int i = 0; i < new_image->height; i++)
+        {
+            memset(&new_image->pixels[i][new_image->width], 255, 
+                    (width - new_image->width) * sizeof(Pixel));
         }
 
-    image->width = width;
-    image->height = height;
+    new_image->width = width;
+    new_image->height = height;
+
+    return new_image;
 }
 
 Pixel setPixel(unsigned char red, unsigned char green, unsigned char blue)

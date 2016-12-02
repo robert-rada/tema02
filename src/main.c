@@ -43,7 +43,7 @@ int main()
                 int width, height;
                 scanf("%d%d", &width, &height);
 
-                resizeImage(image, width, height);
+                image = resizeImage(image, width, height);
 
                 break;
             }
