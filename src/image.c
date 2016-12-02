@@ -121,50 +121,31 @@ Image *resizeImage(Image *image, int width, int height)
             height < MIN_HEIGHT || height > MAX_HEIGHT)
         errorInvalid(image);
 
-    Image *new_image = image;
+    Image *new_image = newImage(width, height);
 
-    for (int i = height; i < new_image->height; i++)
-        free(new_image->pixels[i]);
-    new_image->pixels = realloc(new_image->pixels, height * sizeof(Pixel*));
-    if (new_image->pixels == NULL)
-        errorMemory(new_image);
-
-    if (height < image->height)
+    if (width >= image->width)
     {
-        for (int i = 0; i < height; i++)
-        {
-            new_image->pixels[i] = realloc(new_image->pixels[i], width * sizeof(Pixel));
-            if (new_image->pixels[i] == NULL)
-                errorMemory(new_image);
-        }
+        for (int i = 0; i < height && i < image->height; i++)
+            memcpy(new_image->pixels[i], image->pixels[i], 
+                    image->width * sizeof(Pixel));
     }
     else
     {
-        for (int i = 0; i < image->height; i++)
-        {
-            new_image->pixels[i] = realloc(new_image->pixels[i], width * sizeof(Pixel));
-            if (new_image->pixels[i] == NULL)
-                errorMemory(new_image);
-        }
-        for (int i = image->height; i < height; i++)
-        {
-            new_image->pixels[i] = malloc(width * sizeof(Pixel));
-            if (new_image->pixels[i] == NULL)
-                errorMemory(new_image);
-        }
+        for (int i = 0; i < height && i < image->height; i++)
+            memcpy(new_image->pixels[i], image->pixels[i],
+                    width * sizeof(Pixel));
     }
 
-    for (int i = new_image->height; i < height; i++)
+    for (int i = image->height; i < height; i++)
         memset(new_image->pixels[i], 255, width * sizeof(Pixel));
-    if (width > new_image->width)
-        for (int i = 0; i < new_image->height; i++)
+    if (width > image->width)
+        for (int i = 0; i < image->height && i < height; i++)
         {
-            memset(&new_image->pixels[i][new_image->width], 255, 
-                    (width - new_image->width) * sizeof(Pixel));
+            memset(&new_image->pixels[i][image->width], 255, 
+                    (width - image->width) * sizeof(Pixel));
         }
 
-    new_image->width = width;
-    new_image->height = height;
+    deleteImage(image);
 
     return new_image;
 }
