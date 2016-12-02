@@ -47,13 +47,6 @@ Image *deleteImage(Image *image)
     return NULL;
 }
 
-/*
-Pixel *getPixel(Image *image, int line, int col)
-{
-    return image->pixels + line * image->width + col;
-}
-*/
-
 Image *cropImage(Image *image, int start_line, int start_col,
         int end_line, int end_col)
 {
@@ -89,10 +82,40 @@ Image *cropImage(Image *image, int start_line, int start_col,
     return new_image;
 }
 
+Image *rotateClockwise(Image *image, int nr)
+{
+    return rotateImage(image, 4 - nr);
+}
+
+Image *rotateImage(Image *image, int nr)
+{
+    if (image == NULL)
+        errorPerm(NULL);
+    if (nr < 1 || nr > 3)
+        errorInvalid(image);
+
+    if (nr > 1)
+    {
+        for (int i = 1; i <= nr; i++)
+            image = rotateImage(image, 1);
+
+        return image;
+    }
+
+    Image *new_image = newImage(image->height, image->width);
+    for (int line = 0; line < new_image->height; line++)
+        for (int col = 0; col < new_image->width; col++)
+            new_image->pixels[line][col] = image->pixels[col][image->width - line - 1];
+
+    image = deleteImage(image);
+
+    return new_image;
+}
+
 void resizeImage(Image *image, int width, int height)
 {
     if (image == NULL)
-        errorPerm();
+        errorPerm(NULL);
 
     if (width < MIN_WIDTH || width > MAX_WIDTH ||
             height < MIN_HEIGHT || height > MAX_HEIGHT)
@@ -185,7 +208,7 @@ void swapPointers(Pixel **a, Pixel **b)
 void blurImage(Image *image, int nr)
 {
     if (image == NULL)
-        errorPerm();
+        errorPerm(NULL);
     if (nr > 1)
     {
         for (int i = 1; i <= nr; i++)
@@ -240,7 +263,7 @@ void colorRegion(Image *image, int start_col, int start_line,
         int end_col, int end_line, int r, int g, int b)
 {
     if (image == NULL)
-        errorPerm();
+        errorPerm(NULL);
     if (r < MIN_PIXEL_VALUE || r > MAX_PIXEL_VALUE ||
         g < MIN_PIXEL_VALUE || g > MAX_PIXEL_VALUE ||
         b < MIN_PIXEL_VALUE || b > MAX_PIXEL_VALUE ||
@@ -275,5 +298,39 @@ void printImage(Image *image)
         for (int j = 0; j < image->width; j++)
             printPixel(image->pixels[i][j]);
         printf("\n");
+    }
+}
+
+int pixelCompare(Pixel a, Pixel b)
+{
+    if (a.red == b.red && a.green == b.green && a.blue == b.blue)
+        return 1;
+    return 0;
+}
+
+void fill(Image *image, short line, short col, Pixel pixel)
+{
+    Pixel original_color = image->pixels[line][col];
+    image->pixels[line][col] = pixel;
+
+    if (line > 0)
+    {
+        if (pixelCompare(image->pixels[line-1][col], original_color))
+            fill(image, line-1, col, pixel);
+    }
+    if (line < image->height)
+    {
+        if (pixelCompare(image->pixels[line+1][col], original_color))
+            fill(image, line+1, col, pixel);
+    }
+    if (col > 0)
+    {
+        if (pixelCompare(image->pixels[line][col-1], original_color))
+            fill(image, line, col-1, pixel);
+    }
+    if (col < image->width)
+    {
+        if (pixelCompare(image->pixels[line][col+1], original_color))
+            fill(image, line, col+1, pixel);
     }
 }

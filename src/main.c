@@ -71,6 +71,36 @@ int main()
 
                 break;
             }
+            case 6:
+            {
+                int nr;
+                scanf("%d", &nr);
+
+                image = rotateClockwise(image, nr);
+
+                break;
+            }
+            case 7:
+            {
+                int start_col, start_line;
+                int r, g, b;
+
+                scanf("%d%d", &start_col, &start_line);
+                scanf("%d%d%d", &r, &g, &b);
+
+                if (start_col < 0 || start_col >= image->width ||
+                    start_line < 0 || start_line >= image->height ||
+                    r < MIN_PIXEL_VALUE || r > MAX_PIXEL_VALUE ||
+                    g < MIN_PIXEL_VALUE || g > MAX_PIXEL_VALUE ||
+                    b < MIN_PIXEL_VALUE || b > MAX_PIXEL_VALUE)
+                {
+                    errorInvalid(image);
+                }
+
+                fill(image, start_line, start_col, setPixel(r, g, b));
+
+                break;
+            }
             case 8:
                 printImage(image);
 
